@@ -31,7 +31,7 @@ import { NavBar } from '@/components/NavBar';
 import { Footer } from '@/components/Footer';
 import { Loader } from '@/components/Loader';
 import { CartItem } from '@/components/CartItem';
-import { RazorpayButton } from '@/components/RazorpayButton';
+import { QrisButton } from '@/components/QrisButton';
 import { useApp } from '@/context/AppContext';
 
 const Cart = () => {
@@ -227,11 +227,11 @@ const Cart = () => {
                       )}
                       
                       <div className="flex items-center space-x-2 rounded-md border p-3">
-                        <RadioGroupItem value="upi" id="upi" />
-                        <Label htmlFor="upi" className="flex-1 cursor-pointer">
+                        <RadioGroupItem value="qris" id="qris" />
+                        <Label htmlFor="qris" className="flex-1 cursor-pointer">
                           <div className="flex items-center">
                             <Smartphone className="h-4 w-4 mr-2" />
-                            UPI / Razorpay
+                            QRIS / E-Wallet
                           </div>
                         </Label>
                       </div>
@@ -273,7 +273,7 @@ const Cart = () => {
                     </Button>
                   ) : (
                     user ? (
-                      <RazorpayButton 
+                      <QrisButton 
                         amount={grandTotal}
                         customerName={user.name}
                         customerEmail={user.email}

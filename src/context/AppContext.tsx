@@ -10,11 +10,7 @@ import type {
   OrderStatus
 } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-
-// Define the cart item
-interface CartItem extends OrderItem {
-  imageUrl: string;
-}
+import { cookieCartUtils, CartItem } from '@/utils/cookieCart';
 
 // Define the context state
 interface AppState {
@@ -38,6 +34,7 @@ interface AppActions {
   updateCartItemQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   placeOrder: (paymentMethod: string) => Promise<Order | null>;
+  placeAnonymousOrder: (customerName: string, customerEmail?: string, paymentMethod?: string) => Promise<Order | null>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
@@ -79,6 +76,10 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    
+    // Load cart from cookies
+    const cookieCart = cookieCartUtils.getCart();
+    setCart(cookieCart);
   }, []);
 
   // Login function
@@ -162,81 +163,46 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
     }
   };
 
-  // Add item to cart
+  // Add item to cart (works for both authenticated and anonymous users)
   const addToCart = (item: MenuItem, quantity: number, specialInstructions?: string) => {
-    setCart(currentCart => {
-      // Check if item already exists in cart
-      const existingItem = currentCart.find(cartItem => cartItem.itemId === item.id);
-      
-      if (existingItem) {
-        // Update quantity if item exists
-        return currentCart.map(cartItem => 
-          cartItem.itemId === item.id 
-            ? { 
-                ...cartItem, 
-                quantity: cartItem.quantity + quantity,
-                total: (cartItem.quantity + quantity) * cartItem.price,
-                specialInstructions: specialInstructions || cartItem.specialInstructions
-              } 
-            : cartItem
-        );
-      } else {
-        // Add new item if it doesn't exist
-        return [...currentCart, {
-          itemId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity,
-          total: quantity * item.price,
-          imageUrl: item.imageUrl,
-          specialInstructions
-        }];
-      }
-    });
+    const updatedCart = cookieCartUtils.addItem(item, quantity, specialInstructions);
+    setCart(updatedCart);
     
     toast({
-      title: "Added to cart",
-      description: `${quantity} ${item.name} added to your cart`,
+      title: "Ditambahkan ke keranjang",
+      description: `${quantity} ${item.name} ditambahkan ke keranjang Anda`,
     });
   };
 
   // Remove item from cart
   const removeFromCart = (itemId: string) => {
-    setCart(cart.filter(item => item.itemId !== itemId));
+    const updatedCart = cookieCartUtils.removeItem(itemId);
+    setCart(updatedCart);
     
     toast({
-      title: "Removed from cart",
-      description: "Item removed from your cart",
+      title: "Dihapus dari keranjang",
+      description: "Item dihapus dari keranjang Anda",
     });
   };
 
   // Update cart item quantity
   const updateCartItemQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(itemId);
-      return;
-    }
-    
-    setCart(currentCart => 
-      currentCart.map(item => 
-        item.itemId === itemId 
-          ? { ...item, quantity, total: quantity * item.price } 
-          : item
-      )
-    );
+    const updatedCart = cookieCartUtils.updateQuantity(itemId, quantity);
+    setCart(updatedCart);
   };
 
   // Clear cart
   const clearCart = () => {
+    cookieCartUtils.clearCart();
     setCart([]);
   };
 
-  // Place order
+  // Place order (for authenticated users)
   const placeOrder = async (paymentMethod: string) => {
     if (cart.length === 0) {
       toast({
-        title: "Cannot place order",
-        description: "Your cart is empty",
+        title: "Tidak dapat membuat pesanan",
+        description: "Keranjang Anda kosong",
         variant: "destructive",
       });
       return null;
@@ -244,8 +210,86 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
     
     if (!user) {
       toast({
-        title: "Authentication required",
-        description: "Please login to place an order",
+        title: "Diperlukan autentikasi",
+        description: "Silakan login untuk membuat pesanan",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
+      
+      if (paymentMethod === 'wallet' && (user.walletBalance < totalAmount)) {
+        throw new Error('Saldo dompet tidak mencukupi');
+      }
+      
+      const now = new Date();
+      const readyTime = new Date(now.getTime() + 15 * 60000);
+      
+      const newOrder: Order = {
+        id: `order-${Date.now()}`,
+        customerId: user.id,
+        customerName: user.name,
+        items: cart.map(({ imageUrl, ...item }) => item),
+        totalAmount,
+        status: 'confirmed',
+        createdAt: now.toISOString(),
+        estimatedReadyTime: readyTime.toISOString(),
+        paymentMethod: paymentMethod as any,
+        paymentStatus: 'completed',
+      };
+      
+      setOrders(currentOrders => [newOrder, ...currentOrders]);
+      
+      if (paymentMethod === 'wallet') {
+        setUser(currentUser => {
+          if (!currentUser) return null;
+          return {
+            ...currentUser,
+            walletBalance: currentUser.walletBalance - totalAmount
+          };
+        });
+        
+        const newTransaction: Transaction = {
+          id: `transaction-${Date.now()}`,
+          userId: user.id,
+          amount: totalAmount,
+          type: 'payment',
+          status: 'completed',
+          createdAt: now.toISOString(),
+          description: `Pembayaran untuk pesanan #${newOrder.id}`,
+        };
+        
+        setTransactions(currentTransactions => [newTransaction, ...currentTransactions]);
+      }
+      
+      clearCart();
+      
+      toast({
+        title: "Pesanan berhasil dibuat",
+        description: `Pesanan Anda #${newOrder.id.substring(6)} telah dibuat`,
+      });
+      
+      return newOrder;
+    } catch (error) {
+      toast({
+        title: "Gagal membuat pesanan",
+        description: error instanceof Error ? error.message : "Terjadi kesalahan",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const placeAnonymousOrder = async (customerName: string, customerEmail?: string, paymentMethod: string = 'qris') => {
+    if (cart.length === 0) {
+      toast({
+        title: "Tidak dapat membuat pesanan",
+        description: "Keranjang Anda kosong",
         variant: "destructive",
       });
       return null;
@@ -257,19 +301,14 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
       // Calculate order total
       const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
       
-      // If using wallet, check balance
-      if (paymentMethod === 'wallet' && (user.walletBalance < totalAmount)) {
-        throw new Error('Insufficient wallet balance');
-      }
-      
       // Create new order
       const now = new Date();
       const readyTime = new Date(now.getTime() + 15 * 60000); // 15 minutes from now
       
       const newOrder: Order = {
         id: `order-${Date.now()}`,
-        customerId: user.id,
-        customerName: user.name,
+        customerId: 'anonymous',
+        customerName,
         items: cart.map(({ imageUrl, ...item }) => item), // Remove imageUrl from cart items
         totalAmount,
         status: 'confirmed',
@@ -279,47 +318,22 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
         paymentStatus: 'completed',
       };
       
-      // In a real app, this would be an API call
       // Update orders state
       setOrders(currentOrders => [newOrder, ...currentOrders]);
-      
-      // If payment method is wallet, update wallet balance
-      if (paymentMethod === 'wallet') {
-        setUser(currentUser => {
-          if (!currentUser) return null;
-          return {
-            ...currentUser,
-            walletBalance: currentUser.walletBalance - totalAmount
-          };
-        });
-        
-        // Add transaction
-        const newTransaction: Transaction = {
-          id: `transaction-${Date.now()}`,
-          userId: user.id,
-          amount: totalAmount,
-          type: 'payment',
-          status: 'completed',
-          createdAt: now.toISOString(),
-          description: `Payment for order #${newOrder.id}`,
-        };
-        
-        setTransactions(currentTransactions => [newTransaction, ...currentTransactions]);
-      }
       
       // Clear the cart
       clearCart();
       
       toast({
-        title: "Order placed successfully",
-        description: `Your order #${newOrder.id.substring(6)} has been placed`,
+        title: "Pesanan berhasil dibuat",
+        description: `Pesanan Anda #${newOrder.id.substring(6)} telah dibuat`,
       });
       
       return newOrder;
     } catch (error) {
       toast({
-        title: "Failed to place order",
-        description: error instanceof Error ? error.message : "An error occurred",
+        title: "Gagal membuat pesanan",
+        description: error instanceof Error ? error.message : "Terjadi kesalahan",
         variant: "destructive",
       });
       throw error;
@@ -642,6 +656,7 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
     updateCartItemQuantity,
     clearCart,
     placeOrder,
+    placeAnonymousOrder,
     updateOrderStatus,
     cancelOrder,
     addMenuItem,

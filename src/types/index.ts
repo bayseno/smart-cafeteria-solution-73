@@ -49,7 +49,7 @@ export type OrderStatus =
 
 export type PaymentMethod = 
   | 'wallet' 
-  | 'upi' 
+  | 'qris' 
   | 'card' 
   | 'cash';
 

@@ -47,7 +47,7 @@ export const mockOrders: Order[] = [
     status: 'preparing',
     createdAt: new Date(Date.now() - 10 * 60000).toISOString(), // 10 minutes ago
     estimatedReadyTime: new Date(Date.now() + 5 * 60000).toISOString(), // 5 minutes from now
-    paymentMethod: 'upi',
+    paymentMethod: 'qris',
     paymentStatus: 'completed'
   },
   {

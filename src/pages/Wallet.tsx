@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { NavBar } from '@/components/NavBar';
 import { Footer } from '@/components/Footer';
 import { Loader } from '@/components/Loader';
-import { RazorpayButton } from '@/components/RazorpayButton';
+import { QrisButton } from '@/components/QrisButton';
 import { useApp } from '@/context/AppContext';
 import { Transaction } from '@/types';
 
@@ -50,7 +50,7 @@ const Wallet = () => {
     }
   };
   
-  const handleRazorpaySuccess = async (paymentId: string) => {
+  const handleQrisSuccess = async (paymentId: string) => {
     await addToWallet(amount);
   };
   
@@ -307,20 +307,20 @@ const Wallet = () => {
                       <div className="p-3 border rounded-md flex items-center gap-3">
                         <CreditCard className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">Credit/Debit Card or UPI</p>
+                          <p className="font-medium">QRIS / E-Wallet</p>
                           <p className="text-sm text-muted-foreground">
-                            Pay securely via Razorpay
+                            Bayar dengan mudah menggunakan QRIS
                           </p>
                         </div>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <RazorpayButton
+                    <QrisButton
                       amount={amount}
                       customerName={user.name}
                       customerEmail={user.email}
-                      onSuccess={handleRazorpaySuccess}
+                      onSuccess={handleQrisSuccess}
                     />
                   </CardFooter>
                 </Card>
