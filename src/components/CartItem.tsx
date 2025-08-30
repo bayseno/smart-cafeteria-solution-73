@@ -39,11 +39,11 @@ export const CartItem: React.FC<CartItemProps> = ({
       
       <div className="flex-grow">
         <h3 className="font-medium">{name}</h3>
-        <p className="text-sm text-muted-foreground">₹{price} per item</p>
+        <p className="text-sm text-muted-foreground">Rp. {price.toLocaleString('id-ID')} per item</p>
         
         {specialInstructions && (
           <p className="text-xs text-muted-foreground mt-1">
-            Note: {specialInstructions}
+            Catatan: {specialInstructions}
           </p>
         )}
       </div>
@@ -71,7 +71,7 @@ export const CartItem: React.FC<CartItemProps> = ({
         </Button>
       </div>
       
-      <div className="w-20 text-right font-medium">₹{total}</div>
+      <div className="w-20 text-right font-medium">Rp. {total.toLocaleString('id-ID')}</div>
       
       <Button
         variant="ghost"

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -24,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { formatRupiahSimple } from '@/utils/currency';
 
 interface NavItemProps {
   to: string;
@@ -63,20 +63,20 @@ export const NavBar: React.FC = () => {
   };
   
   const navItems = [
-    { to: '/', label: 'Home', icon: <Home size={20} /> },
+    { to: '/', label: 'Beranda', icon: <Home size={20} /> },
     { to: '/menu', label: 'Menu', icon: <Utensils size={20} /> },
-    { to: '/orders', label: 'My Orders', icon: <ClipboardList size={20} /> },
-    { to: '/wallet', label: 'Wallet', icon: <Wallet size={20} /> },
+    { to: '/orders', label: 'Pesanan Saya', icon: <ClipboardList size={20} /> },
+    { to: '/wallet', label: 'Dompet', icon: <Wallet size={20} /> },
   ];
   
   // Add admin or staff specific routes
   if (user?.role === 'admin') {
     navItems.push(
-      { to: '/admin/dashboard', label: 'Admin Dashboard', icon: null }
+      { to: '/admin/dashboard', label: 'Dashboard Admin', icon: null }
     );
   } else if (user?.role === 'cafeteria_staff') {
     navItems.push(
-      { to: '/staff/orders', label: 'Manage Orders', icon: null }
+      { to: '/staff/orders', label: 'Kelola Pesanan', icon: null }
     );
   }
   
@@ -86,7 +86,7 @@ export const NavBar: React.FC = () => {
         {/* Logo & Brand */}
         <Link to="/" className="flex items-center gap-2">
           <Utensils className="h-8 w-8 text-turmeric-600" />
-          <span className="font-bold text-xl">Smart Cafeteria</span>
+          <span className="font-bold text-xl">Warung Sunda</span>
         </Link>
         
         {/* Desktop Navigation */}
@@ -108,7 +108,7 @@ export const NavBar: React.FC = () => {
             variant="ghost" 
             size="icon" 
             className="relative"
-            onClick={() => navigate('/cart')}
+            onClick={() => navigate(isAuthenticated ? '/cart' : '/anonymous-cart')}
           >
             <ShoppingCart className="h-5 w-5" />
             {totalItems > 0 && (
@@ -138,39 +138,39 @@ export const NavBar: React.FC = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
                 <DropdownMenuItem className="flex justify-between">
-                  <span>Role:</span> 
+                  <span>Peran:</span> 
                   <Badge variant="outline" className="capitalize">
                     {user?.role.replace('_', ' ')}
                   </Badge>
                 </DropdownMenuItem>
                 {user?.walletBalance !== undefined && (
                   <DropdownMenuItem className="flex justify-between">
-                    <span>Wallet:</span> 
-                    <Badge variant="outline">₹{user.walletBalance}</Badge>
+                    <span>Dompet:</span> 
+                    <Badge variant="outline">{formatRupiahSimple(user.walletBalance)}</Badge>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  Profile
+                  Profil
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/wallet')}>
-                  Wallet
+                  Dompet
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/orders')}>
-                  My Orders
+                  Pesanan Saya
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  Keluar
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button variant="default" onClick={() => navigate('/login')}>
-              Login
+              Masuk
             </Button>
           )}
           
@@ -190,7 +190,7 @@ export const NavBar: React.FC = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Utensils className="h-6 w-6 text-turmeric-600" />
-                    <span className="font-bold">Smart Cafeteria</span>
+                    <span className="font-bold">Warung Sunda</span>
                   </Link>
                   <Button 
                     variant="ghost" 
@@ -242,7 +242,7 @@ export const NavBar: React.FC = () => {
                         }}
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        Logout
+                        Keluar
                       </Button>
                     </div>
                   ) : (
@@ -253,7 +253,7 @@ export const NavBar: React.FC = () => {
                           setIsMenuOpen(false);
                         }}
                       >
-                        Login
+                        Masuk
                       </Button>
                       <Button 
                         variant="outline"
@@ -262,7 +262,7 @@ export const NavBar: React.FC = () => {
                           setIsMenuOpen(false);
                         }}
                       >
-                        Register
+                        Daftar
                       </Button>
                     </div>
                   )}

@@ -168,10 +168,10 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
     const updatedCart = cookieCartUtils.addItem(item, quantity, specialInstructions);
     setCart(updatedCart);
     
-    toast({
-      title: "Ditambahkan ke keranjang",
-      description: `${quantity} ${item.name} ditambahkan ke keranjang Anda`,
-    });
+      toast({
+        title: "Ditambahkan ke keranjang",
+        description: `${quantity} ${item.name} ditambahkan ke keranjang Anda`,
+      });
   };
 
   // Remove item from cart
@@ -179,10 +179,10 @@ export const AppProvider: React.FC<{children: React.ReactNode}> = ({ children })
     const updatedCart = cookieCartUtils.removeItem(itemId);
     setCart(updatedCart);
     
-    toast({
-      title: "Dihapus dari keranjang",
-      description: "Item dihapus dari keranjang Anda",
-    });
+      toast({
+        title: "Dihapus dari keranjang",
+        description: "Item dihapus dari keranjang Anda",
+      });
   };
 
   // Update cart item quantity

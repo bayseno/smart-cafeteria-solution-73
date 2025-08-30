@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { MenuItem } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { formatRupiahSimple } from '@/utils/currency';
 
 interface MenuCardProps {
   item: MenuItem;
@@ -42,7 +43,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({ item }) => {
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <Badge variant="destructive" className="flex gap-1 text-sm py-1 px-3">
               <AlertTriangle size={16} />
-              {item.status === 'unavailable' ? 'Out of Stock' : 'Low Stock'}
+              {item.status === 'unavailable' ? 'Habis' : 'Stok Terbatas'}
             </Badge>
           </div>
         )}
@@ -78,12 +79,12 @@ export const MenuCard: React.FC<MenuCardProps> = ({ item }) => {
         
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Clock className="h-4 w-4" />
-          <span>{item.prepTime} mins</span>
+          <span>{item.prepTime} menit</span>
         </div>
       </CardContent>
       
       <CardFooter className="flex items-center justify-between p-4 pt-0">
-        <span className="font-bold">₹{item.price}</span>
+        <span className="font-bold">{formatRupiahSimple(item.price)}</span>
         
         <Button 
           variant="default"
@@ -93,7 +94,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({ item }) => {
           disabled={item.status !== 'available'}
         >
           <Plus className="h-4 w-4 mr-1" />
-          Add
+          Tambah
         </Button>
       </CardFooter>
     </Card>

@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { Loader } from '@/components/Loader';
 import { MenuCard } from '@/components/MenuCard';
 import { SplashScreen } from '@/components/SplashScreen';
+import { QrOrderScanner } from '@/components/QrOrderScanner';
 import { useApp } from '@/context/AppContext';
 
 const Home = () => {
@@ -32,7 +33,7 @@ const Home = () => {
   }, []);
   
   if (showLoader || isLoading) {
-    return <Loader text="Welcome to Smart Cafeteria" />;
+    return <Loader text="Selamat datang di Warung Sunda" />;
   }
 
   return (
@@ -47,11 +48,11 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="space-y-6 animate-fade-in">
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                  Smart Dining for <span className="text-turmeric-600">Smart Campus</span>
+                  Warung Digital untuk <span className="text-turmeric-600">Citarasa Sunda</span>
                 </h1>
                 <p className="text-lg text-gray-700">
-                  Order delicious South Indian cuisine, track inventory, manage your wallet,
-                  and enjoy a seamless cafeteria experience.
+                  Pesan makanan khas Sunda yang lezat, kelola dompet digital,
+                  dan nikmati pengalaman kuliner yang tak terlupakan.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Button 
@@ -59,7 +60,7 @@ const Home = () => {
                     className="bg-turmeric-500 hover:bg-turmeric-600"
                     onClick={() => navigate('/menu')}
                   >
-                    Explore Menu
+                    Lihat Menu
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button 
@@ -67,15 +68,15 @@ const Home = () => {
                     variant="outline"
                     onClick={() => navigate('/scanner')}
                   >
-                    Scan & Order
+                    Scan & Pesan
                   </Button>
                 </div>
               </div>
               
               <div className="relative">
                 <img 
-                  src="https://res.cloudinary.com/dj5yf0qgw/image/upload/v1629880657/south-indian/south-indian-thali_wmfcqn.jpg" 
-                  alt="South Indian Thali" 
+                  src="/api/placeholder/600/400" 
+                  alt="Hidangan Sunda" 
                   className="rounded-lg shadow-2xl animate-zoom-in"
                 />
                 <div className="absolute -bottom-6 -right-6 bg-white rounded-full p-4 shadow-lg hidden md:block animate-slide-in">
@@ -95,10 +96,10 @@ const Home = () => {
         <section className="py-16 bg-white">
           <div className="cafeteria-container">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Why Choose Smart Cafeteria?</h2>
+              <h2 className="text-3xl font-bold mb-4">Mengapa Pilih Warung Sunda Digital?</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Experience a modern cafeteria system designed to make your dining experience
-                seamless, efficient, and enjoyable.
+                Nikmati sistem warung modern yang dirancang untuk memberikan pengalaman
+                kuliner yang mudah, efisien, dan menyenangkan.
               </p>
             </div>
             
@@ -109,10 +110,10 @@ const Home = () => {
                     <div className="p-3 rounded-full bg-turmeric-100 text-turmeric-600 mb-4">
                       <Clock className="h-8 w-8" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Quick Ordering</h3>
+                    <h3 className="text-xl font-semibold mb-2">Pesan Cepat</h3>
                     <p className="text-gray-600">
-                      Order food quickly and track its preparation in real-time.
-                      No more waiting in long queues!
+                      Pesan makanan dengan cepat dan pantau proses pembuatannya secara real-time.
+                      Tidak perlu antri lama!
                     </p>
                   </div>
                 </CardContent>
@@ -124,10 +125,10 @@ const Home = () => {
                     <div className="p-3 rounded-full bg-curry-100 text-curry-600 mb-4">
                       <Wallet className="h-8 w-8" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Cashless Payments</h3>
+                    <h3 className="text-xl font-semibold mb-2">Pembayaran Digital</h3>
                     <p className="text-gray-600">
-                      Pay with your digital wallet, UPI, or cards.
-                      Secure and convenient transactions.
+                      Bayar dengan dompet digital, QRIS, atau kartu kredit.
+                      Transaksi aman dan nyaman.
                     </p>
                   </div>
                 </CardContent>
@@ -139,9 +140,9 @@ const Home = () => {
                     <div className="p-3 rounded-full bg-spice-100 text-spice-600 mb-4">
                       <UserCheck className="h-8 w-8" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Personalized Experience</h3>
+                    <h3 className="text-xl font-semibold mb-2">Pengalaman Personal</h3>
                     <p className="text-gray-600">
-                      View your order history, save favorites, and get personalized recommendations.
+                      Lihat riwayat pesanan, simpan favorit, dan dapatkan rekomendasi khusus untuk Anda.
                     </p>
                   </div>
                 </CardContent>
@@ -149,17 +150,33 @@ const Home = () => {
             </div>
           </div>
         </section>
-        
-        {/* Featured menu section */}
+
+        {/* QR Scanner section */}
         <section className="py-16 bg-stone-50">
           <div className="cafeteria-container">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Scan & Pesan</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Scan QR code untuk langsung memesan tanpa perlu mendaftar akun
+              </p>
+            </div>
+            
+            <div className="flex justify-center">
+              <QrOrderScanner />
+            </div>
+          </div>
+        </section>
+        
+        {/* Featured menu section */}
+        <section className="py-16 bg-white">
+          <div className="cafeteria-container">
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold">Featured Items</h2>
+              <h2 className="text-3xl font-bold">Menu Unggulan</h2>
               <Button 
                 variant="outline"
                 onClick={() => navigate('/menu')}
               >
-                View Full Menu
+                Lihat Semua Menu
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -175,9 +192,9 @@ const Home = () => {
         {/* CTA section */}
         <section className="py-16 bg-gradient-to-r from-turmeric-600 to-spice-600 text-white">
           <div className="cafeteria-container text-center">
-            <h2 className="text-3xl font-bold mb-4">Ready to Start Ordering?</h2>
+            <h2 className="text-3xl font-bold mb-4">Siap Mulai Memesan?</h2>
             <p className="text-lg mb-8 max-w-2xl mx-auto">
-              Create an account or login to access all the features of our Smart Cafeteria system.
+              Buat akun atau masuk untuk mengakses semua fitur sistem Warung Sunda Digital kami.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button 
@@ -185,7 +202,7 @@ const Home = () => {
                 className="bg-white text-turmeric-600 hover:bg-gray-100"
                 onClick={() => navigate('/register')}
               >
-                Create Account
+                Buat Akun
               </Button>
               <Button 
                 size="lg" 
@@ -193,7 +210,7 @@ const Home = () => {
                 className="border-white text-white hover:bg-white hover:text-turmeric-600"
                 onClick={() => navigate('/login')}
               >
-                Login
+                Masuk
               </Button>
             </div>
           </div>
